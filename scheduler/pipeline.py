@@ -3,7 +3,7 @@ import random
 import sys
 import time
 import zlib
-from typing import Dict, Optional, Final
+from typing import Dict, Optional
 
 from .constraints import ConstraintEngine
 from .csp_solver import BacktrackingSolver
@@ -12,7 +12,7 @@ from .exporter import export_timetable
 from .local_search import MinConflictsSolver
 from .model import SchedulingProblem
 
-PROJECT_ROOT: Final[str] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def run_scheduler(
     data_dir: str,
