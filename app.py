@@ -1,11 +1,30 @@
 import csv
+import importlib
 import os
 import re
+import sys
 import traceback
 
-from scheduler.pipeline import run_scheduler
-
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _load_run_scheduler():
+    """Import the solver package that lives next to app.py.
+
+    The import happens here (not at module level) so that a broken or
+    missing package can never stop `import app` from succeeding, and so a
+    different package that happens to be called `scheduler` (e.g. one
+    installed from PyPI, or imported earlier by the test runner) cannot
+    shadow ours."""
+    if sys.path[:1] != [APP_DIR]:
+        sys.path.insert(0, APP_DIR)
+    ours = os.path.join(APP_DIR, "scheduler")
+    for name in [m for m in sys.modules
+                 if m == "scheduler" or m.startswith("scheduler.")]:
+        mod_file = getattr(sys.modules[name], "__file__", None) or ""
+        if not os.path.abspath(mod_file).startswith(ours):
+            del sys.modules[name]
+    return importlib.import_module("scheduler.pipeline").run_scheduler
 
 
 def get_student_id():
@@ -88,6 +107,7 @@ def studentscheduler(data_dir="data", output_dir="data", student_id=None):
     output_path = os.path.join(output_dir, f"{student_id}_timetable.csv")
 
     try:
+        run_scheduler = _load_run_scheduler()
         run_scheduler(data_dir, output_path)
     except Exception:
         traceback.print_exc()
